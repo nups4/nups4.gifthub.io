@@ -1,0 +1,33 @@
+from flask import Flask, render_template, request, redirect, url_for
+import random
+import string
+
+app = Flask(__name__)
+
+notes = {}
+
+def generate_note_id():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/create', methods=['POST'])
+def create_note():
+    note_content = request.form['content']
+    note_id = generate_note_id()
+    notes[note_id] = note_content
+    return redirect(url_for('view_note', note_id=note_id))
+
+@app.route('/note/<note_id>')
+def view_note(note_id):
+    if note_id in notes:
+        note_content = notes[note_id]
+        del notes[note_id]
+        return render_template('note.html', note_content=note_content)
+    else:
+        return "Note not found."
+
+if __name__ == '__main__':
+    app.run(debug=True)
